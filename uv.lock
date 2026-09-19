@@ -1073,6 +1073,7 @@ name = "toolframe-fastmcp"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [
+    { name = "cryptography" },
     { name = "fastmcp" },
     { name = "toolframe-sdk" },
     { name = "uvicorn" },
@@ -1087,6 +1088,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
+    { name = "cryptography", specifier = "==50.0.1" },
     { name = "fastmcp", specifier = "==4.0.0" },
     { name = "toolframe-sdk", editable = "../toolframe-sdk" },
     { name = "uvicorn", specifier = "==0.42.0" },

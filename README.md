@@ -16,3 +16,28 @@ Every tool belongs to one SDK `OwnedResource`. Its call is routed through the
 SDK `RuntimeContext.resource_call` boundary with the owned resource key,
 declared method, and prepared epoch. The provider does not import business
 implementations, access business storage, or expose MCP resources and prompts.
+
+## macOS Intel release artifact
+
+The provider pins `cryptography==50.0.1`. Upstream stopped publishing macOS Intel
+wheels in cryptography 49; see the [upstream changelog](https://cryptography.io/en/latest/changelog/).
+Toolframe's Intel distribution therefore needs a companion wheel in its
+wheelhouse. An ordinary PyPI-only installation on Intel may attempt a source
+build and require native build dependencies.
+
+```sh
+# From this repository; requires Xcode command-line tools, make, Perl, Rust and uv.
+# On Apple Silicon, also install Rosetta and the x86_64-apple-darwin Rust target.
+uv run python scripts/build-macos-intel.py --out-dir ../toolframe-core/wheelhouse
+```
+
+The script verifies pinned source SHA-256 values, builds OpenSSL 4.0.2 in a
+temporary private prefix, and statically links it into the Python 3.14 Intel
+cryptography wheel with a macOS 12 deployment target. It makes no system OpenSSL
+installation. Distribute this wheel beside the provider wheel; retain its upstream
+license metadata. Updating either native dependency requires updating the pins,
+checksums and release acceptance together.
+
+The complete Intel template, online startup and warm-cache offline restart were
+exercised under Rosetta on macOS 14.8.5. Physical Intel hardware and macOS 12 remain
+separate release checks. See the core repository's acceptance report for evidence.
