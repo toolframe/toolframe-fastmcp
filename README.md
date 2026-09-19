@@ -17,6 +17,24 @@ SDK `RuntimeContext.resource_call` boundary with the owned resource key,
 declared method, and prepared epoch. The provider does not import business
 implementations, access business storage, or expose MCP resources and prompts.
 
+## Gateway acceptance
+
+After building the sibling core launcher and workspace wheelhouse:
+
+```sh
+uv run python scripts/verify-gateway.py \
+  --binary ../toolframe-core/target/release/toolframe \
+  --wheelhouse ../toolframe-core/wheelhouse
+```
+
+This creates a disposable application and two ordinary fixture plugins. Two real
+FastMCP clients exercise admitted-call draining, a backend-only replacement that
+retains MCP sessions, a catalog/schema change that replaces the MCP worker, and
+explicit reconnection. Tool/document withdrawal, schema rejection and unrelated
+worker continuity are checked through the actual core gateway. Evidence is saved
+to `dist/gateway-evidence.json`; the script stops its server and prints the log
+directory on failure. It does not certify independent desktop MCP clients.
+
 ## macOS Intel release artifact
 
 The provider pins `cryptography==50.0.1`. Upstream stopped publishing macOS Intel
