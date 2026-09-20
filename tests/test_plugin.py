@@ -43,6 +43,8 @@ async def test_definition_and_http_lifecycle(context: RuntimeContext):
     assert plugin.model_dump(mode="json") == {
         "id": "fastmcp",
         "api_version": 1,
+        "authorization": {"scopes": {}},
+        "private_secrets": [],
         "factory": "toolframe_fastmcp.plugin:McpProvider",
         "kind": "provider",
         "provider_kind": "mcp",

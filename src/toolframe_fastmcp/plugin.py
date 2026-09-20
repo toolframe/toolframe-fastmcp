@@ -14,6 +14,7 @@ from fastmcp.tools import Tool, ToolResult
 from jsonschema.exceptions import ValidationError
 from pydantic import PrivateAttr
 from toolframe_sdk import (
+    AuthorizationSpec,
     OwnedResource,
     Plugin,
     PluginDefinition,
@@ -273,4 +274,5 @@ plugin = PluginDefinition(
     kind="provider",
     provider_kind="mcp",
     factory="toolframe_fastmcp.plugin:McpProvider",
+    authorization=AuthorizationSpec(),
 )

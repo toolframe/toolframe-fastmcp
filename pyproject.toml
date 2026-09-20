@@ -4,11 +4,11 @@ build-backend = "hatchling.build"
 
 [project]
 name = "toolframe-fastmcp"
-version = "0.1.0"
+version = "0.2.0"
 description = "Standalone FastMCP provider for Toolframe"
 requires-python = ">=3.14"
 dependencies = [
-    "toolframe-sdk==0.1.0",
+    "toolframe-sdk==0.2.0",
     "fastmcp==4.0.0",
     "cryptography==50.0.1",
     "uvicorn==0.42.0",
