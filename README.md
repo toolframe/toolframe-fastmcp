@@ -35,6 +35,25 @@ worker continuity are checked through the actual core gateway. Evidence is saved
 to `dist/gateway-evidence.json`; the script stops its server and prints the log
 directory on failure. It does not certify independent desktop MCP clients.
 
+## Codex MCP client acceptance
+
+With a disposable Entry Register application running, use the installed Codex
+client to discover the actual tool schema and call it through the core gateway:
+
+```sh
+# A fresh demo has zero entries; adjust --expected-count for your test data.
+uv run python scripts/verify-codex.py \
+  --url http://127.0.0.1:9876/mcp --expected-count 0
+```
+
+The probe uses the public Codex app-server `mcpServerStatus/list` and
+`mcpServer/tool/call` APIs in an ephemeral thread. It checks a valid read and an
+out-of-range argument. `--expected-max 10` verifies a changed catalog after reload;
+`--expect-absent` checks withdrawal after disabling the demo plugin. Each run makes
+a fresh client connection and writes schema, connection state and actual results
+to `dist/codex-evidence.json` (override with `--output`). Only local HTTP endpoints
+are accepted. It neither starts the Toolframe server nor modifies data.
+
 ## macOS Intel release artifact
 
 The provider pins `cryptography==50.0.1`. Upstream stopped publishing macOS Intel
