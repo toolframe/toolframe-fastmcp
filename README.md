@@ -62,6 +62,14 @@ a fresh client connection and writes schema, connection state and actual results
 to `dist/codex-evidence.json` (override with `--output`). Only local HTTP endpoints
 are accepted. It neither starts the Toolframe server nor modifies data.
 
+Verified with `codex-cli 0.154.0`. The probe replaces the child process's MCP
+configuration and disables unrelated plugins for that process; it never writes
+global Codex configuration or copies credentials. It does not initiate a model
+turn or drive the desktop UI. Noninteractive `codex exec` can refuse a tool call
+when its approval policy requires user input; discovery alone is not proof that
+such a model call succeeded. Store the probe output with the tested revision
+and client version in the release evidence.
+
 ## macOS Intel release artifact
 
 The provider pins `cryptography==50.0.1`. Upstream stopped publishing macOS Intel
@@ -85,7 +93,8 @@ checksums and release acceptance together.
 
 The complete Intel template, online startup and warm-cache offline restart were
 exercised under Rosetta on macOS 14.8.5. Physical Intel hardware and macOS 12 remain
-separate release checks. See the core repository's acceptance report for evidence.
+separate release checks; qualify them against the exact executable before
+advertising support.
 
 ## License
 
