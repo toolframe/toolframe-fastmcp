@@ -78,3 +78,7 @@ checksums and release acceptance together.
 The complete Intel template, online startup and warm-cache offline restart were
 exercised under Rosetta on macOS 14.8.5. Physical Intel hardware and macOS 12 remain
 separate release checks. See the core repository's acceptance report for evidence.
+
+## License
+
+Licensed under the Apache License, Version 2.0. See [LICENSE](LICENSE) and [NOTICE](NOTICE).
