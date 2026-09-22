@@ -35,7 +35,23 @@ def owned(
 
 @pytest.fixture
 def context() -> RuntimeContext:
-    return RuntimeContext(None, plugin_id="fastmcp", generation="generation-1")
+    context = RuntimeContext(None, plugin_id="fastmcp", generation="generation-1")
+
+    async def resolve(reference):
+        if reference != "gateway-request":
+            raise PluginError("authentication_required", "Unknown request")
+        return {
+            "principal": {"kind": "public", "credential_id": None, "scopes": []},
+            "issuer": "test-core",
+            "resources": [
+                f"{owner}/mcp.tool/{name}"
+                for owner in ("alpha", "beta")
+                for name in ("echo", "list", "old", "new", "live")
+            ],
+        }
+
+    context.mcp_access = AsyncMock(side_effect=resolve)
+    return context
 
 
 @pytest.mark.asyncio
@@ -62,7 +78,9 @@ async def test_definition_and_http_lifecycle(context: RuntimeContext):
     try:
         assert provider.server is not None
         assert (await provider.health())["http_url"] == provider.server.url
-        async with Client(f"{provider.server.url}/mcp") as client:
+        async with Client(
+            f"{provider.server.url}/mcp", auth="gateway-request"
+        ) as client:
             assert await client.list_tools() == []
     finally:
         await provider.dispose()
@@ -102,8 +120,8 @@ async def test_clients_list_and_call_catalog_tools(context: RuntimeContext):
         )
         await provider.commit("epoch-1")
         async with (
-            Client(f"{provider.server.url}/mcp") as first,
-            Client(f"{provider.server.url}/mcp") as second,
+            Client(f"{provider.server.url}/mcp", auth="gateway-request") as first,
+            Client(f"{provider.server.url}/mcp", auth="gateway-request") as second,
         ):
             first_tools = await first.list_tools()
             second_tools = await second.list_tools()
@@ -120,6 +138,7 @@ async def test_clients_list_and_call_catalog_tools(context: RuntimeContext):
                 "echo",
                 {"value": "input"},
                 epoch="epoch-1",
+                access_context="gateway-request",
             )
     finally:
         await provider.dispose()
@@ -150,7 +169,9 @@ async def test_invalid_input_and_business_error_are_tool_errors(
             "epoch-1",
         )
         await provider.commit("epoch-1")
-        async with Client(f"{provider.server.url}/mcp") as client:
+        async with Client(
+            f"{provider.server.url}/mcp", auth="gateway-request"
+        ) as client:
             invalid = await client.call_tool(
                 "alpha__echo", {"value": 3}, raise_on_error=False
             )
@@ -194,7 +215,9 @@ async def test_tool_defaults_and_non_object_output_validation(context):
             "epoch",
         )
         await provider.commit("epoch")
-        async with Client(f"{provider.server.url}/mcp") as client:
+        async with Client(
+            f"{provider.server.url}/mcp", auth="gateway-request"
+        ) as client:
             assert not (await client.call_tool("alpha__list", {})).is_error
             assert callback.call_args.args[2] == {"limit": 50}
             callback.return_value = [123]
@@ -214,7 +237,9 @@ async def test_prepare_abort_commit_and_withdrawal_are_atomic(context: RuntimeCo
         await provider.prepare([owned("alpha", "old")], "epoch-1")
         await provider.commit("epoch-1")
         await provider.prepare([owned("beta", "new")], "epoch-2")
-        async with Client(f"{provider.server.url}/mcp") as client:
+        async with Client(
+            f"{provider.server.url}/mcp", auth="gateway-request"
+        ) as client:
             assert [tool.name for tool in await client.list_tools()] == ["alpha__old"]
             await provider.abort("epoch-2")
             assert [tool.name for tool in await client.list_tools()] == ["alpha__old"]
@@ -237,8 +262,8 @@ async def test_replacement_provider_serves_new_catalog_to_reconnecting_clients(
         await old_provider.prepare([owned("alpha", "old")], "epoch-1")
         await old_provider.commit("epoch-1")
         async with (
-            Client(f"{old_provider.server.url}/mcp") as first,
-            Client(f"{old_provider.server.url}/mcp") as second,
+            Client(f"{old_provider.server.url}/mcp", auth="gateway-request") as first,
+            Client(f"{old_provider.server.url}/mcp", auth="gateway-request") as second,
         ):
             assert [tool.name for tool in await first.list_tools()] == ["alpha__old"]
             assert [tool.name for tool in await second.list_tools()] == ["alpha__old"]
@@ -252,8 +277,8 @@ async def test_replacement_provider_serves_new_catalog_to_reconnecting_clients(
         await new_provider.prepare([owned("alpha", "new")], "epoch-2")
         await new_provider.commit("epoch-2")
         async with (
-            Client(f"{new_provider.server.url}/mcp") as first,
-            Client(f"{new_provider.server.url}/mcp") as second,
+            Client(f"{new_provider.server.url}/mcp", auth="gateway-request") as first,
+            Client(f"{new_provider.server.url}/mcp", auth="gateway-request") as second,
         ):
             assert [tool.name for tool in await first.list_tools()] == ["alpha__new"]
             assert [tool.name for tool in await second.list_tools()] == ["alpha__new"]
@@ -286,7 +311,9 @@ async def test_invalid_prepare_leaves_live_catalog_and_unknown_commit_fails(
                 )
             ],
         ]
-        async with Client(f"{provider.server.url}/mcp") as client:
+        async with Client(
+            f"{provider.server.url}/mcp", auth="gateway-request"
+        ) as client:
             for resources in invalid:
                 with pytest.raises(PluginError):
                     await provider.prepare(resources, "candidate")

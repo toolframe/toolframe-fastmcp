@@ -5,6 +5,16 @@ FastMCP 4.0.0 over stateful Streamable HTTP at `/mcp`. The provider binds one
 private loopback listener during activation and reports its URL through plugin
 health; the core gateway owns any public forwarding.
 
+All private-listener requests require a live core-issued request credential.
+Core admits public requests or validates external MCP bearer keys according to
+its independent `[mcp_access]` policy. FastMCP never receives the external secret;
+it resolves the temporary credential through `RuntimeContext.mcp_access`, filters
+tool discovery by the allowed resources, and carries the credential back through
+`resource_call`. Core rechecks scopes, expiry and revocation at tool admission.
+Stateful MCP sessions bind to the credential record. Use this provider together
+with the matching SDK/core changes; an older core cannot supply request credentials.
+See the MCP authentication guide in the core repository for configuration details.
+
 Core sends each complete catalog epoch through `prepare`, `commit`, and
 `abort`. Preparation builds a frozen candidate without changing the live list.
 Commit swaps the entire list atomically, and a later commit withdraws tools
