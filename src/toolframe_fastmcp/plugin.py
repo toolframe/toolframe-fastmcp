@@ -9,6 +9,8 @@ from re import compile as compile_regex
 from typing import Any
 
 from fastmcp import FastMCP
+from fastmcp.server.auth import AccessToken, TokenVerifier
+from fastmcp.server.dependencies import get_access_token
 from fastmcp.server.providers import Provider
 from fastmcp.tools import Tool, ToolResult
 from jsonschema.exceptions import ValidationError
@@ -76,11 +78,17 @@ class _McpTool(Tool):
             return _error_result("invalid_input", str(error))
 
         try:
+            token = get_access_token()
+            if token is None:
+                raise PluginError(
+                    "authentication_required", "MCP request authentication is required"
+                )
             result = await self._context.resource_call(
                 self._owned_key,
                 self._method,
                 arguments,
                 epoch=self._prepared_epoch,
+                access_context=token.token,
             )
         except PluginError as error:
             return _error_result(error.code, error.message)
@@ -119,7 +127,32 @@ class _CatalogProvider(Provider):
         self._tools = tools
 
     async def _list_tools(self) -> Sequence[_McpTool]:
-        return self._tools
+        token = get_access_token()
+        permitted = set(token.claims.get("resources", ())) if token else set()
+        return tuple(tool for tool in self._tools if tool._owned_key in permitted)
+
+
+class _GatewayVerifier(TokenVerifier):
+    """Accept only live request credentials minted by this provider's core."""
+
+    def __init__(self, context: RuntimeContext):
+        super().__init__()
+        self.context = context
+
+    async def verify_token(self, token: str) -> AccessToken | None:
+        try:
+            result = await self.context.mcp_access(token)
+        except PluginError:
+            return None
+        actor = result["principal"]
+        identity = actor.get("credential_id") or "public"
+        return AccessToken(
+            token=token,
+            client_id=identity,
+            subject=identity,
+            scopes=list(actor["scopes"]),
+            claims={"iss": result["issuer"], "resources": result["resources"]},
+        )
 
 
 class McpProvider(Plugin):
@@ -137,6 +170,7 @@ class McpProvider(Plugin):
     async def activate(self) -> None:
         mcp = FastMCP(
             "Toolframe",
+            auth=_GatewayVerifier(self.context),
             providers=[self._catalog],
             dereference_schemas=False,
         )
