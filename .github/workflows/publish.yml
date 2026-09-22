@@ -1,0 +1,73 @@
+name: Publish Python package
+
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: Package index (run this workflow on a matching version tag)
+        type: choice
+        options: [testpypi, pypi]
+        default: testpypi
+        required: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: publish-${{ github.ref }}-${{ inputs.target }}
+  cancel-in-progress: false
+
+jobs:
+  release-tag:
+    name: Require the exact project version tag
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.14.7'
+      - name: Validate tag and target
+        env:
+          RELEASE_REF_TYPE: ${{ github.ref_type }}
+          RELEASE_REF_NAME: ${{ github.ref_name }}
+          RELEASE_TARGET: ${{ inputs.target }}
+        run: |
+          python - <<'PY'
+          import os
+          import tomllib
+          from pathlib import Path
+
+          version = tomllib.loads(Path("pyproject.toml").read_text())["project"]["version"]
+          expected = f"v{version}"
+          if os.environ["RELEASE_REF_TYPE"] != "tag" or os.environ["RELEASE_REF_NAME"] != expected:
+              raise SystemExit(f"Select tag {expected}; branches and other version tags cannot publish")
+          if os.environ["RELEASE_TARGET"] not in {"testpypi", "pypi"}:
+              raise SystemExit("Unknown publishing target")
+          print(f"Validated release tag: {expected}")
+          PY
+  validate:
+    needs: release-tag
+    uses: ./.github/workflows/validate.yml
+  publish:
+    name: Upload validated distributions
+    needs: [release-tag, validate]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    environment:
+      name: ${{ inputs.target }}
+    permissions:
+      id-token: write
+    steps:
+      - name: Download the distributions validated in this run
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: toolframe-fastmcp-ubuntu-24.04
+          path: validated
+      - name: Publish with PyPI Trusted Publishing
+        uses: pypa/gh-action-pypi-publish@dc37677b2e1c63e2034f94d8a5b11f265b73ba33 # v1.14.2
+        with:
+          packages-dir: validated/dist/
+          repository-url: ${{ inputs.target == 'testpypi' && 'https://test.pypi.org/legacy/' || 'https://upload.pypi.org/legacy/' }}
