@@ -12,7 +12,7 @@ uv run --isolated --no-project --python 3.14.7 python scripts/ci.py \
 The script prints the result directory. It accepts an absent or empty output
 directory and refuses to reuse existing output. `--sdk-source /path/to/toolframe-sdk`
 selects the SDK Git checkout (the default is `../toolframe-sdk`). That checkout
-must contain commit `121e60eb5ba77717a382cd474c7a31d2de086d13`.
+must contain commit `a9000ab6ad9743a8f68b5ae3ef7c54fdbf15d6de`.
 
 Every run copies the current tracked and non-ignored files, including local
 edits, to a temporary workspace and extracts the SDK from that exact commit.
