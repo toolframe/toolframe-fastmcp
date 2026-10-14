@@ -12,7 +12,7 @@ uv run --isolated --no-project --python 3.14.7 python scripts/ci.py \
 The script prints the result directory. It accepts an absent or empty output
 directory and refuses to reuse existing output. `--sdk-source /path/to/toolframe-sdk`
 selects the SDK Git checkout (the default is `../toolframe-sdk`). That checkout
-must contain commit `871416a9f9cbcfa79298235781ff193e1ad08a12`.
+must contain commit `ef91b609137a5fe7bae8e0c893e74b096ff06ffe`.
 
 Every run copies the current tracked and non-ignored files, including local
 edits, to a temporary workspace and extracts the SDK from that exact commit.
@@ -66,51 +66,22 @@ Runner labels and architectures follow the
 Python and uv setup follow the
 [official uv Actions guide](https://docs.astral.sh/uv/guides/integration/github/).
 
-## External setup before a future upload
+## Publication
 
-1. Choose the real GitHub owner and push this repository and the pinned SDK
-   commit to `toolframe-fastmcp` and `toolframe-sdk`. The default owner comes from
-   the repository running the workflow. Set repository variable
-   `TOOLFRAME_REPOSITORY_OWNER` if the SDK has a different owner. The sibling
-   checkout currently assumes a public, readable SDK repository; private
-   cross-repository access needs a separately configured read credential and
-   an explicit checkout update, since `GITHUB_TOKEN` is scoped to one repository.
-2. Enable Actions and create GitHub environments named exactly `testpypi` and
-   `pypi`. Restrict deployment to release tags and configure required reviewers
-   according to the repository's release policy.
-3. In **each** of TestPyPI and PyPI, configure a GitHub Trusted Publisher for
-   project `toolframe-fastmcp` (a pending publisher works for a new project).
-   Enter the real owner, repository `toolframe-fastmcp`, workflow filename
-   `publish.yml`, and the matching environment name `testpypi` or `pypi`.
-   No API-token secret is needed. See
-   [PyPI's Trusted Publishing instructions](https://docs.pypi.org/trusted-publishers/using-a-publisher/).
-4. Ensure consumers can obtain the runtime dependency `toolframe-sdk==0.2.0`
-   from their package index or a supplied wheelhouse. CI builds it from the
-   pinned source because it need not be publicly released yet; this workflow
-   publishes only `toolframe-fastmcp`.
-5. Put the workflow files on the default branch so GitHub exposes the manual
-   workflow. Create the release tag at the intended commit with these workflow
-   files present. It must be exactly `v<project.version>`: currently `v0.2.0`.
-   Select that **tag** when manually dispatching `Publish Python package`.
-   A branch named `v0.2.0` and any mismatched version tag are rejected.
-6. Select `testpypi` for the first upload, review the uploaded distribution, then
-   dispatch `pypi` on the same release tag when ready. Each dispatch validates
-   that revision again. Existing releases are not silently skipped or replaced.
-
-These files prepare publishing. Local validation neither registers publishers
-nor pushes tags, uploads distributions, or runs a remote deployment.
+See [releasing](releasing.md) for dependency order, private repository access,
+Trusted Publisher bindings, version tags and consumer installation checks.
 
 ## Platform and integration limits
 
 This is package CI on Linux and Apple Silicon macOS. It does not establish
 support for the complete Toolframe application on Linux or Windows. The current
-native Intel wheel preparation remains `scripts/build-macos-intel.py`: the Core
-repository's `scripts/build-release.sh` explicitly requires its cryptography
-companion wheel for the macOS Intel **full** launcher distribution. See
+native Intel wheel preparation remains `scripts/build-macos-intel.py`: Core's
+native launcher build requires this separately published cryptography companion
+and embeds only its download URL and SHA-256. See
 [the native wheel instructions](../README.md#macos-intel-release-artifact).
 
 The provider's normal PyPI release is a pure-Python wheel plus sdist. Its native
-cryptography companion belongs in the Core release wheelhouse; it must not be
+cryptography companion belongs in the matching Core GitHub Release; it must not be
 uploaded as a `toolframe-fastmcp` distribution. This package workflow does not
 add a duplicate native build/release route. Python-only installation on Intel
 may still require compiling cryptography and its native dependencies.

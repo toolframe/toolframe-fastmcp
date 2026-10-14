@@ -16,7 +16,7 @@ import tomllib
 import zipfile
 from pathlib import Path
 
-SDK_COMMIT = "3dabd646c9a185cf72867eae791a2d9658c36ac4"
+SDK_COMMIT = "ef91b609137a5fe7bae8e0c893e74b096ff06ffe"
 ROOT = Path(__file__).resolve().parents[1]
 
 

@@ -5,6 +5,17 @@ FastMCP 4.0.0 over stateful Streamable HTTP at `/mcp`. The provider binds one
 private loopback listener during activation and reports its URL through plugin
 health; the core gateway owns any public forwarding.
 
+## Install
+
+Install the provider into a running [Toolframe application](https://github.com/toolframe/toolframe-core#readme):
+
+```sh
+toolframe --home APP plugin add pypi:toolframe-fastmcp==0.2.1 --enable
+```
+
+Core resolves dependencies and manages the provider's isolated Python environment.
+The Entry Register template already includes this provider.
+
 All private-listener requests require a live core-issued request credential.
 Core admits public requests or validates external MCP bearer keys according to
 its independent `[mcp_access]` policy. FastMCP never receives the external secret;
@@ -82,10 +93,10 @@ and client version in the release evidence.
 
 ## macOS Intel release artifact
 
-The provider pins `cryptography==50.0.1`. Upstream stopped publishing macOS Intel
+The provider pins `cryptography==50.0.2`. Upstream stopped publishing macOS Intel
 wheels in cryptography 49; see the [upstream changelog](https://cryptography.io/en/latest/changelog/).
-Toolframe's Intel distribution therefore needs a companion wheel in its
-wheelhouse. An ordinary PyPI-only installation on Intel may attempt a source
+Toolframe's Intel launcher automatically downloads a companion from its matching
+GitHub Release and verifies the SHA-256 pinned into the executable. An ordinary PyPI-only installation on Intel may attempt a source
 build and require native build dependencies.
 
 ```sh
@@ -94,17 +105,17 @@ build and require native build dependencies.
 uv run python scripts/build-macos-intel.py --out-dir ../toolframe-core/wheelhouse
 ```
 
-The script verifies pinned source SHA-256 values, builds OpenSSL 4.0.2 in a
+The script verifies pinned source SHA-256 values, builds OpenSSL 4.0.3 in a
 temporary private prefix, and statically links it into the Python 3.14 Intel
 cryptography wheel with a macOS 12 deployment target. It makes no system OpenSSL
-installation. Distribute this wheel beside the provider wheel; retain its upstream
-license metadata. Updating either native dependency requires updating the pins,
+installation. Publish this wheel as a separate Core GitHub Release asset; retain its upstream
+license metadata. No Python wheel is embedded in the launcher. Updating either native dependency requires updating the pins,
 checksums and release acceptance together.
 
-The complete Intel template, online startup and warm-cache offline restart were
-exercised under Rosetta on macOS 14.8.5. Physical Intel hardware and macOS 12 remain
-separate release checks; qualify them against the exact executable before
-advertising support.
+Qualify the exact Intel release on its native runner. Rosetta, physical Intel
+hardware and the macOS 12 minimum are separate verification environments.
+
+For release validation and Trusted Publisher setup, see [releasing](docs/releasing.md).
 
 ## License
 

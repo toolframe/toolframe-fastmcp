@@ -72,6 +72,7 @@ async def test_definition_and_http_lifecycle(context: RuntimeContext):
         "services": {},
         "resources": [],
         "store": None,
+        "runtime_validation": "scratch",
     }
     provider = McpProvider(context)
     await provider.activate()

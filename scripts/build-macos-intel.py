@@ -16,13 +16,13 @@ import urllib.request
 from pathlib import Path
 
 SOURCES = {
-    "openssl-4.0.2": (
-        "https://github.com/openssl/openssl/releases/download/openssl-4.0.2/openssl-4.0.2.tar.gz",
-        "736b467530f916737b7031310ccb21d8218c6229e61e8e160cd1d3458cd543a8",
+    "openssl-4.0.3": (
+        "https://github.com/openssl/openssl/releases/download/openssl-4.0.3/openssl-4.0.3.tar.gz",
+        "325b5c806167c13b40b1ffeadfe0248197c00eccc4cf123ec1e28d2d2fd216d9",
     ),
-    "cryptography-50.0.1": (
-        "https://files.pythonhosted.org/packages/bb/ad/5d6702db60b1e40b41ef513b6967ff5848f307d50f8449baf1634f5908f1/cryptography-50.0.1.tar.gz",
-        "5dd9bda1c12b4162f6ff568eeb5e0ff956c28d14406e875cfe8a63a2d414ff20",
+    "cryptography-50.0.2": (
+        "https://files.pythonhosted.org/packages/9d/af/182eb91b0df3fe75c4d9f26fe70684569566745f6ba7e5c9c73a862c5252/cryptography-50.0.2.tar.gz",
+        "7b46165bb56eb4704e2eaaf86f3c940d19154535d9b0ca7d6d590b04060e00d5",
     ),
 }
 
@@ -62,7 +62,7 @@ def main():
         )
         for command in commands:
             subprocess.run(
-                command, cwd=root / "openssl-4.0.2", env=environment, check=True
+                command, cwd=root / "openssl-4.0.3", env=environment, check=True
             )
         environment.update(OPENSSL_DIR=str(prefix), OPENSSL_STATIC="1")
         subprocess.run(
@@ -75,7 +75,7 @@ def main():
                 "cpython-3.14.7-macos-x86_64-none",
                 "--out-dir",
                 str(output),
-                str(root / "cryptography-50.0.1"),
+                str(root / "cryptography-50.0.2"),
             ],
             env=environment,
             check=True,

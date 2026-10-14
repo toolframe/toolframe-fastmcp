@@ -7,6 +7,7 @@ import json
 import sys
 from importlib.metadata import distribution, version
 from pathlib import Path
+from unittest.mock import AsyncMock
 
 import cryptography
 import fastmcp
@@ -22,9 +23,9 @@ from toolframe_fastmcp import McpProvider, plugin
 async def smoke(expected_version):
     expected = {
         "toolframe-fastmcp": expected_version,
-        "toolframe-sdk": "0.2.0",
+        "toolframe-sdk": "0.3.0",
         "fastmcp": "4.0.0",
-        "cryptography": "50.0.1",
+        "cryptography": "50.0.2",
         "uvicorn": "0.42.0",
     }
     installed = {name: version(name) for name in expected}
@@ -46,12 +47,20 @@ async def smoke(expected_version):
         cipher.decrypt(cipher.encrypt(b"native cryptography smoke"))
         == b"native cryptography smoke"
     )
-    provider = McpProvider(
-        RuntimeContext(None, plugin_id="fastmcp", generation="wheel-smoke")
+    context = RuntimeContext(None, plugin_id="fastmcp", generation="wheel-smoke")
+    context.mcp_access = AsyncMock(
+        return_value={
+            "principal": {"kind": "public", "credential_id": None, "scopes": []},
+            "issuer": "wheel-smoke-core",
+            "resources": [],
+        }
     )
+    provider = McpProvider(context)
     await provider.activate()
     try:
-        async with Client(f"{provider.server.url}/mcp") as client:
+        async with Client(
+            f"{provider.server.url}/mcp", auth="wheel-smoke-request"
+        ) as client:
             assert await client.list_tools() == []
         assert (await provider.health())["runtime"] == "ready"
     finally:

@@ -51,6 +51,7 @@ jobs:
   validate:
     needs: release-tag
     uses: ./.github/workflows/validate.yml
+    secrets: inherit
   publish:
     name: Upload validated distributions
     needs: [release-tag, validate]
