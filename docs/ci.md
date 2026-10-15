@@ -45,7 +45,7 @@ documents that compatibility fix.
 
 | File | Trigger and behavior |
 | --- | --- |
-| `.github/workflows/ci.yml` | Push, pull request, or manual run; calls the shared validation workflow. New CI runs supersede older runs for the same ref. |
+| `.github/workflows/ci.yml` | Push to `main`, pull request, or manual run; calls the shared validation workflow. New CI runs supersede older runs for the same ref. |
 | `.github/workflows/validate.yml` | Reusable workflow; Python 3.14.7 and uv 0.12.8 on `ubuntu-24.04` (x64) and `macos-15` (arm64), with a 20-minute job timeout. Each job runs `scripts/ci.py` and saves its validated distributions and evidence for 7 days. |
 | `.github/workflows/publish.yml` | Manual only; choose `testpypi` (default) or `pypi`, and run on the matching version tag. Validates the tag, reruns the complete shared matrix at that revision, then uploads that run's validated Linux artifact without rebuilding it. |
 
