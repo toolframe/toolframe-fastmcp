@@ -30,7 +30,7 @@ build-backend = "hatchling.build"
 name = "toolframe-gateway-{name}"
 version = "0.1.0"
 requires-python = ">=3.14"
-dependencies = ["toolframe-sdk==0.1.0"]
+dependencies = ["toolframe-sdk==0.4.0"]
 [project.entry-points."toolframe.plugins"]
 {name} = "{package}:plugin"
 [tool.hatch.build.targets.wheel]
@@ -134,8 +134,8 @@ async def verify(args):
         with (home / "toolframe.toml").open("a") as config:
             # init emits an empty [plugins] table; explicit subtables extend it.
             for name, source in {
-                "fastmcp": "pypi:toolframe-fastmcp==0.1.0",
-                "llms-txt": "pypi:toolframe-llms-txt==0.1.0",
+                "fastmcp": "pypi:toolframe-fastmcp==0.3.0",
+                "llms-txt": "pypi:toolframe-llms-txt==0.3.0",
                 "alpha": str(alpha),
                 "beta": str(beta),
             }.items():
