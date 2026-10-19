@@ -23,7 +23,7 @@ from toolframe_fastmcp import McpProvider, plugin
 async def smoke(expected_version):
     expected = {
         "toolframe-fastmcp": expected_version,
-        "toolframe-sdk": "0.3.0",
+        "toolframe-sdk": "0.4.0",
         "fastmcp": "4.0.0",
         "cryptography": "50.0.2",
         "uvicorn": "0.42.0",
