@@ -10,7 +10,7 @@ health; the core gateway owns any public forwarding.
 Install the provider into a running [Toolframe application](https://github.com/toolframe/toolframe-core#readme):
 
 ```sh
-toolframe --home APP plugin add pypi:toolframe-fastmcp==0.3.0 --enable
+toolframe --home APP plugin add pypi:toolframe-fastmcp==0.3.1 --enable
 ```
 
 Core resolves dependencies and manages the provider's isolated Python environment.
@@ -25,6 +25,15 @@ tool discovery by the allowed resources, and carries the credential back through
 Stateful MCP sessions bind to the credential record. Use this provider together
 with the matching SDK/core changes; an older core cannot supply request credentials.
 See the MCP authentication guide in the core repository for configuration details.
+
+Stateful sessions expire after 1800 seconds with no HTTP request in flight.
+The provider's optional `session_idle_timeout` configuration accepts a positive,
+finite number of seconds and takes precedence over FastMCP's
+`FASTMCP_HTTP_SESSION_IDLE_TIMEOUT` environment setting. When neither is set,
+the provider uses 1800 seconds; inactivity expiry cannot be disabled with `null`.
+An open GET event stream or an in-flight tool request keeps a session active.
+After expiry, the old session ID returns HTTP 404 and the client must initialize
+a new session. Client DELETE and provider shutdown also release sessions.
 
 Core sends each complete catalog epoch through `prepare`, `commit`, and
 `abort`. Preparation builds a frozen candidate without changing the live list.
