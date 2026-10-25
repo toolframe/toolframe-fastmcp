@@ -41,7 +41,7 @@ implementations, access business storage, or expose MCP resources and prompts.
 ## CI and publishing
 
 See [CI and release setup](docs/ci.md) for the shared local validation command,
-the GitHub Actions checks, and manual TestPyPI/PyPI Trusted Publishing setup.
+the GitHub Actions checks, and manual PyPI Trusted Publishing setup.
 Validation builds the pinned SDK in a disposable workspace, runs the plugin
 tests, checks the distributions, and exercises a clean installed provider wheel
 with its real runtime dependencies.
