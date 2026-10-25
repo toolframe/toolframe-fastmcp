@@ -66,6 +66,14 @@ async def test_definition_and_http_lifecycle(context: RuntimeContext):
         "provider_kind": "mcp",
         "config_schema": {
             "type": "object",
+            "properties": {
+                "session_idle_timeout": {
+                    "type": "number",
+                    "exclusiveMinimum": 0,
+                    "description": "Idle session timeout in seconds; defaults to the "
+                    "FastMCP setting when set, otherwise 1800 seconds.",
+                },
+            },
             "additionalProperties": False,
         },
         "requires": {},
