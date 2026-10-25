@@ -2,19 +2,12 @@ name: Publish Python package
 
 on:
   workflow_dispatch:
-    inputs:
-      target:
-        description: Package index (run this workflow on a matching version tag)
-        type: choice
-        options: [testpypi, pypi]
-        default: testpypi
-        required: true
 
 permissions:
   contents: read
 
 concurrency:
-  group: publish-${{ github.ref }}-${{ inputs.target }}
+  group: publish-${{ github.ref }}-pypi
   cancel-in-progress: false
 
 jobs:
@@ -29,11 +22,10 @@ jobs:
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: '3.14.7'
-      - name: Validate tag and target
+      - name: Validate the version tag
         env:
           RELEASE_REF_TYPE: ${{ github.ref_type }}
           RELEASE_REF_NAME: ${{ github.ref_name }}
-          RELEASE_TARGET: ${{ inputs.target }}
         run: |
           python - <<'PY'
           import os
@@ -44,8 +36,6 @@ jobs:
           expected = f"v{version}"
           if os.environ["RELEASE_REF_TYPE"] != "tag" or os.environ["RELEASE_REF_NAME"] != expected:
               raise SystemExit(f"Select tag {expected}; branches and other version tags cannot publish")
-          if os.environ["RELEASE_TARGET"] not in {"testpypi", "pypi"}:
-              raise SystemExit("Unknown publishing target")
           print(f"Validated release tag: {expected}")
           PY
   validate:
@@ -58,7 +48,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     environment:
-      name: ${{ inputs.target }}
+      name: pypi
     permissions:
       id-token: write
     steps:
@@ -71,4 +61,4 @@ jobs:
         uses: pypa/gh-action-pypi-publish@dc37677b2e1c63e2034f94d8a5b11f265b73ba33 # v1.14.2
         with:
           packages-dir: validated/dist/
-          repository-url: ${{ inputs.target == 'testpypi' && 'https://test.pypi.org/legacy/' || 'https://upload.pypi.org/legacy/' }}
+          repository-url: https://upload.pypi.org/legacy/
