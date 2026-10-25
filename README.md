@@ -122,3 +122,6 @@ For release validation and Trusted Publisher setup, see [releasing](docs/releasi
 Licensed under the Apache License, Version 2.0. See [LICENSE](LICENSE) and [NOTICE](NOTICE).
 
 For development hooks and contribution rules, see [Contributing](CONTRIBUTING.md).
+
+Plugin dependencies allow compatible SDK 0.x updates from the declared minimum.
+See the [SDK compatibility policy](https://github.com/toolframe/toolframe-sdk/blob/main/docs/compatibility.md) for API guarantees and minimum/latest verification.

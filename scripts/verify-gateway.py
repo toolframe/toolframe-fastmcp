@@ -30,7 +30,7 @@ build-backend = "hatchling.build"
 name = "toolframe-gateway-{name}"
 version = "0.1.0"
 requires-python = ">=3.14"
-dependencies = ["toolframe-sdk==0.4.0"]
+dependencies = ["toolframe-sdk>=0.4.0,<1"]
 [project.entry-points."toolframe.plugins"]
 {name} = "{package}:plugin"
 [tool.hatch.build.targets.wheel]
