@@ -26,6 +26,15 @@ Stateful MCP sessions bind to the credential record. Use this provider together
 with the matching SDK/core changes; an older core cannot supply request credentials.
 See the MCP authentication guide in the core repository for configuration details.
 
+Stateful sessions expire after 1800 seconds with no HTTP request in flight.
+The provider's optional `session_idle_timeout` configuration accepts a positive,
+finite number of seconds and takes precedence over FastMCP's
+`FASTMCP_HTTP_SESSION_IDLE_TIMEOUT` environment setting. When neither is set,
+the provider uses 1800 seconds; inactivity expiry cannot be disabled with `null`.
+An open GET event stream or an in-flight tool request keeps a session active.
+After expiry, the old session ID returns HTTP 404 and the client must initialize
+a new session. Client DELETE and provider shutdown also release sessions.
+
 Core sends each complete catalog epoch through `prepare`, `commit`, and
 `abort`. Preparation builds a frozen candidate without changing the live list.
 Commit swaps the entire list atomically, and a later commit withdraws tools

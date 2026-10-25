@@ -5,9 +5,11 @@ from __future__ import annotations
 from collections.abc import Sequence
 from copy import deepcopy
 from hashlib import sha256
+from math import isfinite
 from re import compile as compile_regex
 from typing import Any
 
+import fastmcp
 from fastmcp import FastMCP
 from fastmcp.server.auth import AccessToken, TokenVerifier
 from fastmcp.server.dependencies import get_access_token
@@ -29,6 +31,7 @@ from toolframe_sdk.http import HttpServer
 _OWNER = compile_regex(r"[a-z][a-z0-9-]{0,63}\Z")
 _RESOURCE_ID = compile_regex(r"[a-z][a-z0-9_-]{0,63}\Z")
 _DEFAULT_INPUT_SCHEMA = {"type": "object"}
+_DEFAULT_SESSION_IDLE_TIMEOUT = 1800
 
 
 class _McpTool(Tool):
@@ -168,6 +171,22 @@ class McpProvider(Plugin):
         self._epoch: str | None = None
 
     async def activate(self) -> None:
+        timeout = self.context.config.get(
+            "session_idle_timeout",
+            fastmcp.settings.http_session_idle_timeout
+            if fastmcp.settings.http_session_idle_timeout is not None
+            else _DEFAULT_SESSION_IDLE_TIMEOUT,
+        )
+        if (
+            isinstance(timeout, bool)
+            or not isinstance(timeout, (int, float))
+            or not isfinite(timeout)
+            or timeout <= 0
+        ):
+            raise PluginError(
+                "invalid_config",
+                "session_idle_timeout must be a positive, finite number of seconds",
+            )
         mcp = FastMCP(
             "Toolframe",
             auth=_GatewayVerifier(self.context),
@@ -178,6 +197,7 @@ class McpProvider(Plugin):
             path="/mcp",
             transport="streamable-http",
             stateless_http=False,
+            session_idle_timeout=timeout,
         )
         self.server = HttpServer(self.app)
         await self.server.start()
@@ -309,4 +329,16 @@ plugin = PluginDefinition(
     provider_kind="mcp",
     factory="toolframe_fastmcp.plugin:McpProvider",
     authorization=AuthorizationSpec(),
+    config_schema={
+        "type": "object",
+        "properties": {
+            "session_idle_timeout": {
+                "type": "number",
+                "exclusiveMinimum": 0,
+                "description": "Idle session timeout in seconds; defaults to the "
+                "FastMCP setting when set, otherwise 1800 seconds.",
+            },
+        },
+        "additionalProperties": False,
+    },
 )
