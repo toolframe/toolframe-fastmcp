@@ -134,7 +134,7 @@ async def verify(args):
         with (home / "toolframe.toml").open("a") as config:
             # init emits an empty [plugins] table; explicit subtables extend it.
             for name, source in {
-                "fastmcp": "pypi:toolframe-fastmcp==0.3.0",
+                "fastmcp": "pypi:toolframe-fastmcp==0.3.1",
                 "llms-txt": "pypi:toolframe-llms-txt==0.3.0",
                 "alpha": str(alpha),
                 "beta": str(beta),

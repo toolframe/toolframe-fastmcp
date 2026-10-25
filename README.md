@@ -10,7 +10,7 @@ health; the core gateway owns any public forwarding.
 Install the provider into a running [Toolframe application](https://github.com/toolframe/toolframe-core#readme):
 
 ```sh
-toolframe --home APP plugin add pypi:toolframe-fastmcp==0.3.0 --enable
+toolframe --home APP plugin add pypi:toolframe-fastmcp==0.3.1 --enable
 ```
 
 Core resolves dependencies and manages the provider's isolated Python environment.
