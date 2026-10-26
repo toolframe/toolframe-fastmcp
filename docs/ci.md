@@ -78,7 +78,7 @@ support for the complete Toolframe application on Linux or Windows. The current
 native Intel wheel preparation remains `scripts/build-macos-intel.py`: Core's
 native launcher build requires this separately published cryptography companion
 and embeds only its download URL and SHA-256. See
-[the native wheel instructions](../README.md#macos-intel-release-artifact).
+[the native wheel instructions](macos-intel.md).
 
 The provider's normal PyPI release is a pure-Python wheel plus sdist. Its native
 cryptography companion belongs in the matching Core GitHub Release; it must not be
