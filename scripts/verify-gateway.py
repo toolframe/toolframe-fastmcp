@@ -9,12 +9,12 @@ import shutil
 import signal
 import socket
 import subprocess
-import tempfile
 import urllib.error
 import urllib.request
 from pathlib import Path
 
 from fastmcp import Client
+from verification_workspace import create_workspace, managed_verification
 
 
 def fixture(root, name, behavior, catalog=1):
@@ -101,7 +101,7 @@ class Example(Plugin):
 
 
 async def verify(args):
-    root = Path(tempfile.mkdtemp(prefix="toolframe-mcp-gateway-"))
+    root = create_workspace("toolframe-mcp-gateway-", evidence=args.output)
     home = root / "app"
     binary = args.binary.resolve()
     wheels = args.wheelhouse.resolve()
@@ -350,6 +350,7 @@ async def verify(args):
             assert server.returncode in (0, -signal.SIGTERM), root / "core.log"
 
 
+@managed_verification
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--binary", type=Path, required=True)

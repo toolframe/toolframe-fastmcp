@@ -70,8 +70,15 @@ FastMCP clients exercise admitted-call draining, a backend-only replacement that
 retains MCP sessions, a catalog/schema change that replaces the MCP worker, and
 explicit reconnection. Tool/document withdrawal, schema rejection and unrelated
 worker continuity are checked through the actual core gateway. Evidence is saved
-to `dist/gateway-evidence.json`; the script stops its server and prints the log
-directory on failure. It does not certify independent desktop MCP clients.
+to `dist/gateway-evidence.json`; the script stops its server and preserves adjacent
+`<report>.logs/<run>/` diagnostics. Successful checks remove their disposable
+`build/verification/` workspace after saving evidence. The latest failed workspace
+is retained for up to seven days and pruned by later runs when `ps` and `lsof`
+confirm it is inactive. Unknown activity, changed ownership and live child
+processes prevent deletion. `TOOLFRAME_KEEP_TEST_WORKSPACE=1` explicitly retains a
+run, including after success. Existing applications and unmarked directories are
+outside this cleanup scope. This check does not certify independent desktop MCP
+clients.
 
 ## Codex MCP client acceptance
 
